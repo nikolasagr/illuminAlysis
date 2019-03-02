@@ -6,3 +6,6 @@ Created on Sat Mar  2 14:06:15 2019
 @author: nicolasagrotis
 """
 
+# code for preprocessing idat files from illumina 
+
+import numpy as np
