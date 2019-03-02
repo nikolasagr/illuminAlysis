@@ -58,5 +58,5 @@ samplesheet = samplesheet[None]
 # Function 
 
 
-# Remove 
+# Remove the samples with
 df.columns[df.isnull().mean() < 0.8]
