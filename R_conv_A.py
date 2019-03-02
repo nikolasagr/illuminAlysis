@@ -57,4 +57,6 @@ samplesheet = samplesheet[None]
 # Remove samples with >10% NAs
 # Function 
 
+
+# Remove 
 df.columns[df.isnull().mean() < 0.8]
