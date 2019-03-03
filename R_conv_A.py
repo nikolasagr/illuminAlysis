@@ -81,16 +81,52 @@ samples = samples.loc[samples.isnull().mean(axis=1) < 0.1]
 
 from sklearn import preprocessing
 
+# Subset the 'bc1.grn','bc1.red','bc2'
 tech_vars=samples[['bc1.grn','bc1.red','bc2']]
 
+# Standardise the tech_vars
+tech_vars_stand = preprocessing.scale(tech_vars)
+tech_vars_stand = pd.DataFrame(tech_vars_stand)
+tech_vars_stand.index=tech_vars.index
+tech_vars_stand.columns=tech_vars.columns
+
+from sklearn.decomposition import PCA as sklearnPCA
+import plotly.plotly as py
+
+sklearn_pca = sklearnPCA(n_components=2)
+tech_vars_pca = sklearn_pca.fit_transform(tech_vars_stand)
 
 
+tech_vars_pca_DF=pd.DataFrame(tech_vars_pca)
+
+# pcout has the wfinal01 set which is binary and just chose 
+# what should the python include?
+
+#OneClassSVM is an algorithm that specializes in learning the expected distributions in a dataset. OneClassSVM is especially useful as a novelty detector method if you can first provide data cleaned from outliers; otherwise, it’s effective as a detector of multivariate outliers. In order to have OneClassSVM work properly, you have two key parameters to fix:
+
+#gamma, telling the algorithm whether to follow or approximate the dataset distributions. For novelty detection, it is better to have a value of 0 or superior (follow the distribution); for outlier detection values, smaller than 0 values are preferred (approximate the distribution).
+
+#nu, which can be calculated by the following formula: nu_estimate = 0.95 * f + 0.05, where f is the percentage of expected outliers (a number from 1 to 0). If your purpose is novelty detection, f will be 0.
 
 
+from sklearn import svm
 
+# fit the model
+nu_estimate = 0.95 * outliers_fraction + 0.05
+clf = svm.OneClassSVM(nu=nu_estimate, kernel="rbf", gamma=0.01)
+clf.fit(tech_vars_stand)
 
+y_pred_test = clf.predict(tech_vars_stand)
+n_error_test = y_pred_test[y_pred_test == -1].size
 
+y_pred_test_df=pd.DataFrame(y_pred_test)
 
+y_pred_test_df.index=tech_vars_stand.index
 
+y_pred_test_df=y_pred_test_df[y_pred_test_df==1]
 
+y_pred_test_df= y_pred_test_df.dropna()
 
+common = samples.index.intersection(y_pred_test_df.index)
+
+samples=samples.loc[common]
