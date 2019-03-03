@@ -31,30 +31,31 @@ import pyreadr
 
 
 
-control_beads = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illumiAlysis/illumiData/hm450_controls.Rds')
+control_beads = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/hm450_controls.Rds')
 control_beads = control_beads[None]
 
 # Load DNA Data
-
-dnam = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illumiAlysis/illumiData/eira_dnam.Rds')
+# too big to run
+dnam = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/eira_dnam.Rds')
 dnam = dnam[None]
 
-controls = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illumiAlysis/illumiData/eira_controls.Rds')
+controls = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/eira_controls.Rds')
 controls = controls[None]
 
-snps = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illumiAlysis/illumiData/eira_snps.Rds')
+snps = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/eira_snps.Rds')
 snps = snps[None]
 
-samples = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illumiAlysis/illumiData/eira_samples.Rds')
+samples = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/eira_samples.Rds')
 samples = samples[None]
 
 # Load individual characteristics data
 
-covars = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illumiAlysis/illumiData/Covariates.Rds')
+covars = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/Covariates.Rds')
 covars = covars[None]
 
-samplesheet = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illumiAlysis/illumiData/Sample_sheet.Rds')
-samplesheet = samplesheet[None]
+
+#samplesheet = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illumiAlysis/illumiData/Sample_sheet.Rds')
+#samplesheet = samplesheet[None]
 
 # Remove samples with >10% NAs
 # Function 
@@ -62,3 +63,34 @@ samplesheet = samplesheet[None]
 
 #
 df.columns[df.isnull().mean() < 0.8]
+
+
+#-----------------------------------------------------------------------------------------#
+
+# set the columns and the index of the datasets
+
+samples=samples.set_index("sample.id")
+
+# Before 689, after 673
+samples.iloc[:,:].isnull().sum()
+samples = samples.loc[samples.isnull().mean(axis=1) < 0.1]
+
+#-----------------------------------------------------------------------------------------#
+
+# Extract BC controls and perform multivariate outlier identification
+
+from sklearn import preprocessing
+
+tech_vars=samples[['bc1.grn','bc1.red','bc2']]
+
+
+
+
+
+
+
+
+
+
+
+
