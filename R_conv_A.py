@@ -162,8 +162,12 @@ def infer_sex(samples):
               (sex_info['median.chrX'] > 0.37) & (sex_info['missing.chrY'] > 0.39)]
     choices = ['M', 'F']
     sex_info['sex'] = np.select(conditions, choices)
+    
+    # Set the correct indexing 
     samples=samples.set_index("sample.id")
     sex_info.index=samples.index
+    
+    # Count the number of males and females
     num_males=sex_info.loc[sex_info.sex == 'M', 'sex'].count()
     num_females=sex_info.loc[sex_info.sex == 'F', 'sex'].count()
     print("Number of Males:",num_males)
@@ -174,10 +178,20 @@ def infer_sex(samples):
 #-----------------------------------------------------------------------------------------#
 
 def infer_sex_2(samples):
+    
+    # Subset the median.chrX and missing.chrY from the samples dataset
     sex_info=samples[['median.chrX','missing.chrY']]
+    
+    # From bibliography set hard boundaries to descriminate between males and females
+    # hard boundaries: median.chrX' < 0.37
     sex_info.loc[(sex_info['median.chrX'] < 0.37) & (sex_info['missing.chrY'] < 0.39), 'sex'] = 'M'
     sex_info.loc[(sex_info['median.chrX'] > 0.37) & (sex_info['missing.chrY'] > 0.39), 'sex'] = 'F'
+    samples=samples.set_index("sample.id")
+    
+    # Set the correct indexing
     sex_info.index=samples.index
+    
+    #Count the number of males and females
     num_males=sex_info.loc[sex_info.sex == 'M', 'sex'].count()
     num_females=sex_info.loc[sex_info.sex == 'F', 'sex'].count()
     print("Number of Males:",num_males)
@@ -185,5 +199,37 @@ def infer_sex_2(samples):
     
     return sex_info
     
+
+def sex_comp(covars,samples):
     
+    f_num_covars=covars.loc[covars['gender']== 'f','gender'].count()
+    m_num_covars=covars.loc[covars['gender']== 'm','gender'].count()
     
+    sex_info=samples[['median.chrX','missing.chrY']]
+    
+    # From bibliography set hard boundaries to descriminate between males and females
+    # hard boundaries: median.chrX' < 0.37
+    sex_info.loc[(sex_info['median.chrX'] < 0.37) & (sex_info['missing.chrY'] < 0.39), 'sex'] = 'M'
+    sex_info.loc[(sex_info['median.chrX'] > 0.37) & (sex_info['missing.chrY'] > 0.39), 'sex'] = 'F'
+    samples=samples.set_index("sample.id")
+    
+    # Set the correct indexing
+    sex_info.index=samples.index
+    
+    #Count the number of males and females
+    num_males_samp=sex_info.loc[sex_info.sex == 'M', 'sex'].count()
+    num_females_samp=sex_info.loc[sex_info.sex == 'F', 'sex'].count()
+    
+    if num_males_samp == m_num_covars:
+        print("Male numbers of the infered function are the same")
+    else:
+        print("Male numbers of the infered function are not the same")
+    
+    if num_females_samp == f_num_covars:
+        print("Female numbers of the infered function are the same")
+    else:print("Male numbers of the infered function are not the same")
+    
+    return
+        
+    
+
