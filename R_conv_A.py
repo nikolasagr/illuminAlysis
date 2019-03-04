@@ -25,6 +25,7 @@ from sklearn.metrics import confusion_matrix,classification_report
 
 
 #-----------------------------------------------------------------------------------------#
+# Data Loading
 
 control_beads = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/hm450_controls.Rds')
 control_beads = control_beads[None]
@@ -33,6 +34,8 @@ control_beads = control_beads[None]
 # too big to run
 dnam = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/eira_dnam.Rds')
 dnam = dnam[None]
+
+dnam = pd.read_csv("/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/eira_dnam_copy.csv")
 
 controls = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/eira_controls.Rds')
 controls = controls[None]
@@ -54,7 +57,6 @@ covars = covars[None]
 
 
 #-----------------------------------------------------------------------------------------#
-
 # Remove samples with >10% NAs
 
 def missing_less_10(samples):
@@ -68,7 +70,7 @@ def missing_less_10(samples):
     return samples
     
 #-----------------------------------------------------------------------------------------#
-
+# PCA oulier trial
 # Extract BC controls and perform multivariate outlier identification
 
 from sklearn import preprocessing
@@ -92,9 +94,7 @@ tech_vars_pca = sklearn_pca.fit_transform(tech_vars_stand)
 tech_vars_pca_DF=pd.DataFrame(tech_vars_pca)
 
 #-----------------------------------------------------------------------------------------#
-
 #OneClassSVM is an algorithm that specializes in learning the expected distributions in a dataset. OneClassSVM is especially useful as a novelty detector method if you can first provide data cleaned from outliers; otherwise, it’s effective as a detector of multivariate outliers. In order to have OneClassSVM work properly, you have two key parameters to fix:
-
 
 # fit the model
 def SMV_outliers(samples):
@@ -149,6 +149,7 @@ def SMV_outliers(samples):
     return samples
 
 #-----------------------------------------------------------------------------------------#
+# Infer the sex from the median X chromosome value and the missing Y chromosome values
 
 def infer_sex(samples):
     
@@ -176,6 +177,7 @@ def infer_sex(samples):
     return sex_info
 
 #-----------------------------------------------------------------------------------------#
+# Infer the sex from the median X chromosome value and the missing Y chromosome values
 
 def infer_sex_2(samples):
     
@@ -199,7 +201,9 @@ def infer_sex_2(samples):
     
     return sex_info
     
-
+#-----------------------------------------------------------------------------------------#
+# Confirm that the sex inferal done earlier is correct by checking the covars
+    
 def sex_comp(covars,samples):
     
     f_num_covars=covars.loc[covars['gender']== 'f','gender'].count()
@@ -231,5 +235,6 @@ def sex_comp(covars,samples):
     
     return
         
+#-----------------------------------------------------------------------------------------#   
+# Identify replicates
     
-
