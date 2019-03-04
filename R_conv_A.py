@@ -57,24 +57,21 @@ covars = covars[None]
 #samplesheet = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illumiAlysis/illumiData/Sample_sheet.Rds')
 #samplesheet = samplesheet[None]
 
-# Remove samples with >10% NAs
-# Function 
-
-
-#
-df.columns[df.isnull().mean() < 0.8]
-
 
 #-----------------------------------------------------------------------------------------#
 
-# set the columns and the index of the datasets
+# Remove samples with >10% NAs
 
-samples=samples.set_index("sample.id")
+def missing_less_10(samples):
 
-# Before 689, after 673
-samples.iloc[:,:].isnull().sum()
-samples = samples.loc[samples.isnull().mean(axis=1) < 0.1]
+    samples=samples.set_index("sample.id")
 
+    # Before 689, after 673
+    samples.iloc[:,:].isnull().sum()
+    samples = samples.loc[samples.isnull().mean(axis=1) < 0.1]
+    
+    return samples
+    
 #-----------------------------------------------------------------------------------------#
 
 # Extract BC controls and perform multivariate outlier identification
@@ -99,34 +96,59 @@ tech_vars_pca = sklearn_pca.fit_transform(tech_vars_stand)
 
 tech_vars_pca_DF=pd.DataFrame(tech_vars_pca)
 
-# pcout has the wfinal01 set which is binary and just chose 
-# what should the python include?
+#-----------------------------------------------------------------------------------------#
 
 #OneClassSVM is an algorithm that specializes in learning the expected distributions in a dataset. OneClassSVM is especially useful as a novelty detector method if you can first provide data cleaned from outliers; otherwise, it’s effective as a detector of multivariate outliers. In order to have OneClassSVM work properly, you have two key parameters to fix:
 
-#gamma, telling the algorithm whether to follow or approximate the dataset distributions. For novelty detection, it is better to have a value of 0 or superior (follow the distribution); for outlier detection values, smaller than 0 values are preferred (approximate the distribution).
-
-#nu, which can be calculated by the following formula: nu_estimate = 0.95 * f + 0.05, where f is the percentage of expected outliers (a number from 1 to 0). If your purpose is novelty detection, f will be 0.
-
-
-from sklearn import svm
 
 # fit the model
-nu_estimate = 0.95 * outliers_fraction + 0.05
-clf = svm.OneClassSVM(nu=nu_estimate, kernel="rbf", gamma=0.01)
-clf.fit(tech_vars_stand)
+def SMV_outliers(samples):
+    
+    from sklearn import preprocessing
+    from sklearn import svm
+    
+    tech_vars=samples[['bc1.grn','bc1.red','bc2']]
+    
+    # Standardisation prior to outlier detection
+    
+    tech_vars_stand = preprocessing.scale(tech_vars)
+    tech_vars_stand = pd.DataFrame(tech_vars_stand)
+    tech_vars_stand.index=tech_vars.index
+    tech_vars_stand.columns=tech_vars.columns
+    
+    # OneClassSVM oulier detector
+    # nu, #nu, which can be calculated by the following formula:
+    # nu_estimate = 0.95 * f + 0.05, where f is the percentage of expected outliers 
+    # (a number from 1 to 0). If your purpose is novelty detection, f will be 0.
 
-y_pred_test = clf.predict(tech_vars_stand)
-n_error_test = y_pred_test[y_pred_test == -1].size
+    # gamma, telling the algorithm whether to follow or approximate the 
+    # dataset distributions. For novelty detection, it is better to have a value of 0 or superior 
+    # (follow the distribution); for outlier detection values, smaller than 0 values are preferred 
+    # (approximate the distribution).
 
-y_pred_test_df=pd.DataFrame(y_pred_test)
+    clf = svm.OneClassSVM(nu=0.05, kernel="rbf", gamma=0.01)
+    clf.fit(tech_vars_stand)
 
-y_pred_test_df.index=tech_vars_stand.index
+    y_pred_test = clf.predict(tech_vars_stand)
+    
+    # Number of outliers stored in n_error_test
+    n_error_test = y_pred_test[y_pred_test == -1].size
+    print("Number of outliers removed:",n_error_test)
 
-y_pred_test_df=y_pred_test_df[y_pred_test_df==1]
+    y_pred_test_df=pd.DataFrame(y_pred_test)
 
-y_pred_test_df= y_pred_test_df.dropna()
+    y_pred_test_df.index=tech_vars_stand.index
 
-common = samples.index.intersection(y_pred_test_df.index)
+    # Subset the samples that are = 1 which are the non outliers
+    
+    y_pred_test_df=y_pred_test_df[y_pred_test_df==1]
 
-samples=samples.loc[common]
+    
+    y_pred_test_df= y_pred_test_df.dropna()
+
+    # Apply the subsetted indices to the samples dataframe
+    common = samples.index.intersection(y_pred_test_df.index)
+
+    samples=samples.loc[common]
+    
+    return samples
