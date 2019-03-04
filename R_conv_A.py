@@ -9,27 +9,22 @@ import seaborn as sns
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import pyreadr
+from datetime import datetime
+from math import sqrt
+import timeit
 
-
-import matplotlib.pyplot as plt
-import seaborn as sns  # plot
 
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-
-from sklearn.linear_model import LinearRegression
-from datetime import datetime
-
-from sklearn.metrics import mean_squared_error
-from math import sqrt
 from sklearn.metrics import confusion_matrix,classification_report
-from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import confusion_matrix,classification_report
+
 
 
 #-----------------------------------------------------------------------------------------#
-import pyreadr
-
-
 
 control_beads = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/hm450_controls.Rds')
 control_beads = control_beads[None]
@@ -68,7 +63,7 @@ def missing_less_10(samples):
 
     # Before 689, after 673
     samples.iloc[:,:].isnull().sum()
-    samples = samples.loc[samples.isnull().mean(axis=1) < 0.1]
+    samples= samples.loc[samples.isnull().mean(axis=1) < 0.1]
     
     return samples
     
@@ -152,3 +147,43 @@ def SMV_outliers(samples):
     samples=samples.loc[common]
     
     return samples
+
+#-----------------------------------------------------------------------------------------#
+
+def infer_sex(samples):
+    
+    # Subset the median.chrX and missing.chrY from the samples dataset
+    
+    sex_info=samples[['median.chrX','missing.chrY']]
+    
+    # From bibliography set hard boundaries to descriminate between males and females
+    # hard boundaries: median.chrX' < 0.37
+    conditions = [(sex_info['median.chrX'] < 0.37) & (sex_info['missing.chrY'] < 0.39),
+              (sex_info['median.chrX'] > 0.37) & (sex_info['missing.chrY'] > 0.39)]
+    choices = ['M', 'F']
+    sex_info['sex'] = np.select(conditions, choices)
+    samples=samples.set_index("sample.id")
+    sex_info.index=samples.index
+    num_males=sex_info.loc[sex_info.sex == 'M', 'sex'].count()
+    num_females=sex_info.loc[sex_info.sex == 'F', 'sex'].count()
+    print("Number of Males:",num_males)
+    print("Number of Females:",num_females)
+    
+    return sex_info
+
+#-----------------------------------------------------------------------------------------#
+
+def infer_sex_2(samples):
+    sex_info=samples[['median.chrX','missing.chrY']]
+    sex_info.loc[(sex_info['median.chrX'] < 0.37) & (sex_info['missing.chrY'] < 0.39), 'sex'] = 'M'
+    sex_info.loc[(sex_info['median.chrX'] > 0.37) & (sex_info['missing.chrY'] > 0.39), 'sex'] = 'F'
+    sex_info.index=samples.index
+    num_males=sex_info.loc[sex_info.sex == 'M', 'sex'].count()
+    num_females=sex_info.loc[sex_info.sex == 'F', 'sex'].count()
+    print("Number of Males:",num_males)
+    print("Number of Females:",num_females)
+    
+    return sex_info
+    
+    
+    
