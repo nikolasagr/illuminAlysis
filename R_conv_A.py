@@ -30,12 +30,8 @@ from sklearn.metrics import confusion_matrix,classification_report
 control_beads = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/hm450_controls.Rds')
 control_beads = control_beads[None]
 
-# Load DNA Data
-# too big to run
-dnam = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/eira_dnam.Rds')
-dnam = dnam[None]
-
-dnam = pd.read_csv("/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/eira_dnam_copy.csv")
+# In functions its dnam
+cpgs = pd.read_csv("/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData2/cpgs.csv")
 
 controls = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/eira_controls.Rds')
 controls = controls[None]
@@ -65,10 +61,24 @@ def missing_less_10(samples):
 
     # Before 689, after 673
     samples.iloc[:,:].isnull().sum()
-    samples= samples.loc[samples.isnull().mean(axis=1) < 0.1]
+    samples= samples.loc[samples.isnull().mean(axis=1) < 0.1,]
     
     return samples
     
+#-----------------------------------------------------------------------------------------#
+
+# Remove samples with >10% NAs
+# Correct
+# Produced the same result as R
+def missing_thresh(samples):
+    
+    samples=samples.loc[samples['missing']<0.1]
+    
+    return samples
+
+
+
+
 #-----------------------------------------------------------------------------------------#
 # PCA oulier trial
 # Extract BC controls and perform multivariate outlier identification
@@ -179,15 +189,17 @@ def infer_sex(samples):
 #-----------------------------------------------------------------------------------------#
 # Infer the sex from the median X chromosome value and the missing Y chromosome values
 
-def infer_sex_2(samples):
+def infer_sex_2(samples,median_X,missing_Y):
     
+    median_X=0
+    missing_Y=0
     # Subset the median.chrX and missing.chrY from the samples dataset
     sex_info=samples[['median.chrX','missing.chrY']]
     
     # From bibliography set hard boundaries to descriminate between males and females
     # hard boundaries: median.chrX' < 0.37
-    sex_info.loc[(sex_info['median.chrX'] < 0.37) & (sex_info['missing.chrY'] < 0.39), 'sex'] = 'M'
-    sex_info.loc[(sex_info['median.chrX'] > 0.37) & (sex_info['missing.chrY'] > 0.39), 'sex'] = 'F'
+    sex_info.loc[(sex_info['median.chrX'] < median_X) & (sex_info['missing.chrY'] < missing_Y), 'sex'] = 'M'
+    sex_info.loc[(sex_info['median.chrX'] > median_X) & (sex_info['missing.chrY'] > missing_Y), 'sex'] = 'F'
     samples=samples.set_index("sample.id")
     
     # Set the correct indexing
