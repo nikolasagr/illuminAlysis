@@ -236,7 +236,7 @@ snps.isnull().sum().sum()
 snps.dropna(inplace=True)
 
 snps.shape[0]
-
+#-----------------------------------------------------------------------------------------#   
 # snps_distribution used to vicualise the distributions of the different snps
 
 def snps_distribution(snps):
@@ -244,26 +244,90 @@ def snps_distribution(snps):
     for i in range(0,snps.shape[0]):
         a=snps.iloc[i]
         b=a.index
-        c=a.values
+        snp_vals=a.values
 
 
-        c=pd.DataFrame(c)
-        c['snps_name']=b
+        snp_vals=pd.DataFrame(snp_vals)
+        snp_vals['snps_name']=b
 
-        c.drop(c.index[0],inplace=True)
-        c.columns=['val','snps_name']
-        plt.scatter(c['snps_name'],c['val'])
+        snp_vals.drop(snp_vals.index[0],inplace=True)
+        snp_vals.columns=['val','snps_name']
+        plt.scatter(snp_vals['snps_name'],snp_vals['val'])
         plt.show()
 
 
+#-----------------------------------------------------------------------------------------#   
+# Categorise the snps into bands depending on their values
+
+a=snps.iloc[0]
+b=a.index
+snp_vals=a.values
+
+
+snp_vals=pd.DataFrame(snp_vals)
+snp_vals['snps_name']=b
+
+snp_vals.drop(snp_vals.index[0],inplace=True)
+snp_vals.columns=['val','snps_name']
+snp_vals.loc[snp_vals['val']<0.2,'group']=0
+snp_vals.loc[(snp_vals['val']>0.2) & (snp_vals['val']<0.8),'group']=0.5
+snp_vals.loc[snp_vals['val']>0.8,'group']=1
+snp_vals.shape
+snp_vals.iloc[:5,:3]
 
 
 
+# If sample has the same sex and same group number in its snps
+# Then it is a duplicate
 
 
+snps.set_index('Unnamed: 0',inplace=True)
+snps.index.name='sample_id'
 
 
-
+def list_creation(n):
+    
+    dict_gamoshistos = {}
+    
+    for i in 
+    
+    lista
+    
+    
+    return lista_ + n = []
 
 
     
+    
+dick = {}
+for n in range(0, snps.shape[0]):
+    
+    dick['listoua_%s' % n] = []
+    
+    
+    for i in snps.iloc[n,:]:
+        
+        if i <= 0.2:
+            
+            i = 0
+            
+            #lista.append(i)
+        
+        if i>= 0.8:
+            
+            i = 1
+            
+            #lista.append(i)
+            
+        elif i>0.2 or i<0.8: 
+            
+            i = 0.5
+            
+            #lista.append(i)
+            
+        dick['listoua_' + str(n)].append(i)
+    
+
+   
+
+
