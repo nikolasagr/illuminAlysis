@@ -36,8 +36,10 @@ cpgs = pd.read_csv("/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData2/cpgs
 controls = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/eira_controls.Rds')
 controls = controls[None]
 
-snps = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/eira_snps.Rds')
-snps = snps[None]
+#snps = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData2/eira_snps.Rds')
+#snps = snps[None]
+
+snps = pd.read_csv("/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData2/snps.csv")
 
 samples = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/eira_samples.Rds')
 samples = samples[None]
@@ -76,32 +78,6 @@ def missing_thresh(samples):
     
     return samples
 
-
-
-
-#-----------------------------------------------------------------------------------------#
-# PCA oulier trial
-# Extract BC controls and perform multivariate outlier identification
-
-from sklearn import preprocessing
-
-# Subset the 'bc1.grn','bc1.red','bc2'
-tech_vars=samples[['bc1.grn','bc1.red','bc2']]
-
-# Standardise the tech_vars
-tech_vars_stand = preprocessing.scale(tech_vars)
-tech_vars_stand = pd.DataFrame(tech_vars_stand)
-tech_vars_stand.index=tech_vars.index
-tech_vars_stand.columns=tech_vars.columns
-
-from sklearn.decomposition import PCA as sklearnPCA
-import plotly.plotly as py
-
-sklearn_pca = sklearnPCA(n_components=2)
-tech_vars_pca = sklearn_pca.fit_transform(tech_vars_stand)
-
-
-tech_vars_pca_DF=pd.DataFrame(tech_vars_pca)
 
 #-----------------------------------------------------------------------------------------#
 #OneClassSVM is an algorithm that specializes in learning the expected distributions in a dataset. OneClassSVM is especially useful as a novelty detector method if you can first provide data cleaned from outliers; otherwise, it’s effective as a detector of multivariate outliers. In order to have OneClassSVM work properly, you have two key parameters to fix:
@@ -191,27 +167,30 @@ def infer_sex(samples):
 
 def infer_sex_2(samples,median_X,missing_Y):
     
-    median_X=0
-    missing_Y=0
+    x=float(median_X)
+    y=float(missing_Y)
+    
     # Subset the median.chrX and missing.chrY from the samples dataset
-    sex_info=samples[['median.chrX','missing.chrY']]
     
     # From bibliography set hard boundaries to descriminate between males and females
     # hard boundaries: median.chrX' < 0.37
-    sex_info.loc[(sex_info['median.chrX'] < median_X) & (sex_info['missing.chrY'] < missing_Y), 'sex'] = 'M'
-    sex_info.loc[(sex_info['median.chrX'] > median_X) & (sex_info['missing.chrY'] > missing_Y), 'sex'] = 'F'
-    samples=samples.set_index("sample.id")
+    samples.loc[(samples['median.chrX'] < 0.37) & (samples['missing.chrY'] < 0.39), 'sex'] = 'M'
+    samples.loc[(samples['median.chrX'] > 0.37) & (samples['missing.chrY'] > 0.39), 'sex'] = 'F'
+    
     
     # Set the correct indexing
-    sex_info.index=samples.index
+    #samples_A.index=samples.index
     
     #Count the number of males and females
-    num_males=sex_info.loc[sex_info.sex == 'M', 'sex'].count()
-    num_females=sex_info.loc[sex_info.sex == 'F', 'sex'].count()
+    num_males=samples.loc[samples.sex == 'M', 'sex'].count()
+    num_females=samples.loc[samples.sex == 'F', 'sex'].count()
     print("Number of Males:",num_males)
     print("Number of Females:",num_females)
     
-    return sex_info
+    
+    return samples
+
+samples.set_index("sample.id",inplace=True)
     
 #-----------------------------------------------------------------------------------------#
 # Confirm that the sex inferal done earlier is correct by checking the covars
@@ -249,4 +228,42 @@ def sex_comp(covars,samples):
         
 #-----------------------------------------------------------------------------------------#   
 # Identify replicates
+    
+snps.shape
+snps.iloc[0]
+snps.iloc[0].isnull().sum()
+snps.isnull().sum().sum()
+snps.dropna(inplace=True)
+
+snps.shape[0]
+
+# snps_distribution used to vicualise the distributions of the different snps
+
+def snps_distribution(snps):
+    
+    for i in range(0,snps.shape[0]):
+        a=snps.iloc[i]
+        b=a.index
+        c=a.values
+
+
+        c=pd.DataFrame(c)
+        c['snps_name']=b
+
+        c.drop(c.index[0],inplace=True)
+        c.columns=['val','snps_name']
+        plt.scatter(c['snps_name'],c['val'])
+        plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
     
