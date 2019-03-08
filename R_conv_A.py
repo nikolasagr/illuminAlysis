@@ -135,6 +135,41 @@ def SMV_outliers(samples):
     return samples
 
 #-----------------------------------------------------------------------------------------#
+
+# Outlier Method using SD
+
+def simple_outlier(samples):
+
+    tech_vars=samples[['bc1.grn','bc1.red','bc2']]
+    
+    mean=[]
+    sd=[]
+    m_1=[]
+    m_2=[]
+    
+    for m in range(0,tech_vars.shape[1]):
+        
+        mean_col= tech_vars.iloc[:,m].mean()
+        mean.append(mean_col)
+    
+        sd_col= tech_vars.iloc[:,s].std()
+        sd.append(sd_col)
+        
+        m_1.append(mean[m] - (2 * sd[m]))
+        m_2.append(mean[m] + (2 * sd[m]))    
+        
+          
+    for i in range(0,len(mean)):
+    
+        tech_vars = tech_vars[tech_vars.iloc[:,i]>m_1[i]]
+        tech_vars = tech_vars[tech_vars.iloc[:,i]<m_2[i]]
+        
+    return tech_vars
+
+#571 Samples left after outlier removal
+    
+
+#-----------------------------------------------------------------------------------------#
 # Infer the sex from the median X chromosome value and the missing Y chromosome values
 
 def infer_sex(samples):
