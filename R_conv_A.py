@@ -278,13 +278,13 @@ for n in range(0, snps.shape[0]):
         
         if i>= 0.8:
             
-            i = 1
+            i = 2
             
             #lista.append(i)
             
         elif i>0.2 or i<0.8: 
             
-            i = 0.5
+            i = 1
             
             #lista.append(i)
             
@@ -313,8 +313,6 @@ def snps_DeComp(snps):
 # Then the samples are duplicates
 # create a new Dataframe that includes all the duplicates
 
-dist = numpy.linalg.norm(a-b)
-
 from scipy.spatial import distance_matrix
 
 dist_snps=pd.DataFrame(distance_matrix(snps.values, snps.values), index=snps.index, columns=snps.index)
@@ -330,34 +328,49 @@ def similarity_snps_m(snps_call):
     for i in range(0,snps_call.shape[0]):
         for j in range(i+1,snps_call.shape[0]):
             dist_matrix[j, i] = abs(snps_call.iloc[i,:]-snps_call.iloc[j,:]).sum()
-    return dist_matrix
+            dist_m=pd.DataFrame(dist_matrix)
+            dist_m.index=snps_call.index
+            dist_m.columns=snps_call.index
+            
+            #ax = sns.heatmap(dist_m, annot=True, fmt="d")
+            
+    return dist_m
 
+# Heatmap visualisation
+    
+ax = sns.heatmap(dist_m, annot=True)
+ax.set_title('Distance Matrix for SNPSs')
+
+#-----------------------------------------------------------------------------------------#   
 
 # Replicates
+
+def replicates_pullout(dist_m, threshold,sex_info):
     
-for i in range(0,snps_call[0]):
-    if snps_call.iloc[i,:]==snps_call.ilocp[i+1,:]:
-         print(snps_call.iloc[i])
-
-snps_call
-dist_matrix<7.5
-
-
-dist_m=pd.DataFrame(dist_matrix)
-dist_m.index=snps_call.index
-dist_m.columns=snps_call.index
-dist_m=dist_m<44
-
-for i in range(0,dist_m.shape[0]):
-    for j in range(0,dist_m.shape[0]):
-        
-        if dist_m.iloc[i,j] == True:
+    dist_m=dist_m < threshold
+    
+    rows=[]
+    columns=[]
+    
+    for i in range(0,dist_m.shape[0]):
+        for j in range(0,dist_m.shape[0]):
             
-            print(dist_m.index[i],dist_m.index[j])
-        
-# sex indicator included as well
-        
-# Should have 5 functions
+            if dist_m.iloc[i,j] == True:
+                
+                rows.append(dist_m.index[i])
+                columns.append(dist_m.index[j])
+                
+    
+    sex_ident=sex_info['sex']
+    
+    for n in range (0,len(rows)):
+            
+        if sex_ident[rows[n]] == sex_ident[columns[n]]:
+                
+            print('Replicate detected:',rows[n],columns[n])
+            
+#-----------------------------------------------------------------------------------------#   
+
         
         
         
