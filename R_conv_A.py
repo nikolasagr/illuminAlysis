@@ -259,50 +259,13 @@ def snps_distribution(snps):
 #-----------------------------------------------------------------------------------------#   
 # Categorise the snps into bands depending on their values
 
-a=snps.iloc[0]
-b=a.index
-snp_vals=a.values
-
-
-snp_vals=pd.DataFrame(snp_vals)
-snp_vals['snps_name']=b
-
-snp_vals.drop(snp_vals.index[0],inplace=True)
-snp_vals.columns=['val','snps_name']
-snp_vals.loc[snp_vals['val']<0.2,'group']=0
-snp_vals.loc[(snp_vals['val']>0.2) & (snp_vals['val']<0.8),'group']=0.5
-snp_vals.loc[snp_vals['val']>0.8,'group']=1
-snp_vals.shape
-snp_vals.iloc[:5,:3]
-
-
-
-# If sample has the same sex and same group number in its snps
-# Then it is a duplicate
-
-
 snps.set_index('Unnamed: 0',inplace=True)
-snps.index.name='sample_id'
-
-
-def list_creation(n):
+snps.index.name='sample_id'    
     
-    dict_gamoshistos = {}
-    
-    for i in 
-    
-    lista
-    
-    
-    return lista_ + n = []
-
-
-    
-    
-dick = {}
+snps_decomposition = {}
 for n in range(0, snps.shape[0]):
     
-    dick['listoua_%s' % n] = []
+    snps_decomposition['sample_%s' % n] = []
     
     
     for i in snps.iloc[n,:]:
@@ -325,9 +288,79 @@ for n in range(0, snps.shape[0]):
             
             #lista.append(i)
             
-        dick['listoua_' + str(n)].append(i)
+        snps_decomposition['sample_' + str(n)].append(i)
     
+snps_Dec=pd.DataFrame.from_dict(snps_decomposition)
+snps_Dec.index=snps.columns
+snps_Dec.columns=snps.index
 
-   
+#-----------------------------------------------------------------------------------------#   
+
+def snps_DeComp(snps):
+    
+    snps.set_index('Unnamed: 0',inplace=True)
+    snps.index.name='sample_id'
+    
+    snps[snps<=0.2]=0
+    snps[snps>=0.8]=2
+    snps[(snps>0.2 ) & (snps<0.8)]=1
+    
+    return snps
+
+#-----------------------------------------------------------------------------------------#   
+# if a sample has the same values in its snps
+# && the same sex
+# Then the samples are duplicates
+# create a new Dataframe that includes all the duplicates
+
+dist = numpy.linalg.norm(a-b)
+
+from scipy.spatial import distance_matrix
+
+dist_snps=pd.DataFrame(distance_matrix(snps.values, snps.values), index=snps.index, columns=snps.index)
+
+#-----------------------------------------------------------------------------------------#   
+
+# Distance matrix to see similarities in SNPS
+def similarity_snps_m(snps_call):
+
+    dist_matrix = np.empty((snps_call.shape[0], snps_call.shape[0]))
+    dist_matrix[:,:] = np.nan
+    
+    for i in range(0,snps_call.shape[0]):
+        for j in range(i+1,snps_call.shape[0]):
+            dist_matrix[j, i] = abs(snps_call.iloc[i,:]-snps_call.iloc[j,:]).sum()
+    return dist_matrix
 
 
+# Replicates
+    
+for i in range(0,snps_call[0]):
+    if snps_call.iloc[i,:]==snps_call.ilocp[i+1,:]:
+         print(snps_call.iloc[i])
+
+snps_call
+dist_matrix<7.5
+
+
+dist_m=pd.DataFrame(dist_matrix)
+dist_m.index=snps_call.index
+dist_m.columns=snps_call.index
+dist_m=dist_m<44
+
+for i in range(0,dist_m.shape[0]):
+    for j in range(0,dist_m.shape[0]):
+        
+        if dist_m.iloc[i,j] == True:
+            
+            print(dist_m.index[i],dist_m.index[j])
+        
+# sex indicator included as well
+        
+# Should have 5 functions
+        
+        
+        
+        
+        
+        
