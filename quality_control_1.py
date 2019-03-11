@@ -75,7 +75,10 @@ covars = covars[None]
 
 
 #-----------------------------------------------------------------------------------------#
-
+# 1) remove unreliable functions 'remove_unreliable_samples'
+            #- missing
+            #-outliers
+            
 # samples.shape
 # Out[669]: (560, 28)
 
@@ -120,7 +123,39 @@ def remove_unreliable_samples(samples,threshold):
     return samples
 
 #-----------------------------------------------------------------------------------------#    
+#2) infer sex 'infer_sex':
+            # - get the F&M column
+            # - ask for threshold
+
+def infer_sex(samples,threshold_chrX=0.37,threshold_chrY=0.39):
     
+    #x=float(median_X)
+    #y=float(missing_Y)
+    
+    # Subset the median.chrX and missing.chrY from the samples dataset
+    
+    # From bibliography set hard boundaries to descriminate between males and females
+    # hard boundaries: if median.chrX' < 0.37 and missing Y chromosome is smaller than 0.39 then M
+                      #if median.chrX' > 0.37 and missing Y chromosome is bigger than 0.39 then F
+                      # Otherwise set the value to NaN
+                      
+    samples.loc[(samples['median.chrX'] < threshold_chrX) & (samples['missing.chrY'] < threshold_chrY), 'sex'] = 'M'
+    samples.loc[(samples['median.chrX'] > threshold_chrX) & (samples['missing.chrY'] > threshold_chrY), 'sex'] = 'F'
+    samples.loc[(samples['median.chrX'] < threshold_chrX) & (samples['missing.chrY'] > threshold_chrY), 'sex'] = np.nan
+    samples.loc[(samples['median.chrX'] > threshold_chrX) & (samples['missing.chrY'] < threshold_chrY), 'sex'] = np.nan    
+    
+    #Count the number of males and females
+    num_males=samples.loc[samples.sex == 'M', 'sex'].count()
+    num_females=samples.loc[samples.sex == 'F', 'sex'].count()
+    print("Number of Males:",num_males)
+    print("Number of Females:",num_females)
+    
+    samples.set_index("sample.id",inplace=True)
+    
+    return samples
+
+#-----------------------------------------------------------------------------------------#    
+
 
 
 
