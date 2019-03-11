@@ -137,10 +137,15 @@ def SMV_outliers(samples):
 #-----------------------------------------------------------------------------------------#
 
 # Outlier Method using SD
-
+# Outliers are identified based by the criterion:
+# Either they are higher than Mean + 2SD
+# Or they are lower than Mean - 2SD
+    
 def simple_outlier(samples):
 
     tech_vars=samples[['bc1.grn','bc1.red','bc2']]
+    samples.set_index('sample.id',inplace=True)
+    
     
     mean=[]
     sd=[]
@@ -405,10 +410,30 @@ def replicates_pullout(dist_m, threshold,sex_info):
             print('Replicate detected:',rows[n],columns[n])
             
 #-----------------------------------------------------------------------------------------#   
+ 
+# Quality Control Function architecture:
+            
+# 1) remove unreliable functions 'remove_unreliable_samples'
+            #- missing
+            #-outliers
+            #- ! Remove corresponding samples in other list entries
 
-        
-        
-        
-        
-        
+#2) infer sex 'infer_sex':
+            # - get the F&M column
+            # - maybe try and also disply the results
+            # - ask for threshold
+            
+#3) call SNPS 'call_snps' :
+            # - identify the snps using the thresholds
+            # - plot? ASK tim
+            
+#4) snps distance matrix 'snp_distance':
+            # - plot the heatmap
+            # - display the matrix
+            
+#5) identify duplicates 'identify_replicates'
+            # - print duplicates/replicates
+            
+
+            
         
