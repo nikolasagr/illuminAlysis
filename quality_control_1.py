@@ -81,6 +81,9 @@ covars = covars[None]
             
 # samples.shape
 # Out[669]: (560, 28)
+# SMV (573,27)
+# Simple(560,27)
+# PCA (501)
 
 def remove_unreliable_samples(samples,threshold):
         
@@ -122,6 +125,11 @@ def remove_unreliable_samples(samples,threshold):
     
     return samples
 
+#s_out=samples_outliers.index
+#s_simp=samples_simple.index
+
+#s_simp.intersection(s_out)
+
 #-----------------------------------------------------------------------------------------#    
 #2) infer sex 'infer_sex':
             # - get the F&M column
@@ -155,14 +163,54 @@ def infer_sex(samples,threshold_chrX=0.37,threshold_chrY=0.39):
     return samples
 
 #-----------------------------------------------------------------------------------------#    
+#3) call SNPS 'call_snps' :
+            # - identify the snps using the thresholds
+            # - plot? ASK tim
+
+def identify_replicates(snps,threshold,samples):
+    
+    snps.set_index('Unnamed: 0',inplace=True)
+    snps.index.name='sample_id'
+    
+    snps[snps<=0.2]=0
+    snps[snps>=0.8]=2
+    snps[(snps>0.2 ) & (snps<0.8)]=1
+    
+    dist_matrix = np.empty((snps.shape[0], snps.shape[0]))
+    dist_matrix[:,:] = np.nan
+
+    for i in range(0,snps.shape[0]):
+        for j in range(i+1,snps.shape[0]):
+            dist_matrix[j, i] = abs(snps.iloc[i,:]-snps.iloc[j,:]).sum()
+            dist_m=pd.DataFrame(dist_matrix)
+            dist_m.index=snps.index
+            dist_m.columns=snps.index
+            
+    ax = sns.heatmap(dist_m, annot=True)
+    ax.set_title('Distance Matrix for SNPSs')
+    
+    dist_m=dist_m < threshold
+    
+    rows=[]
+    columns=[]
+    
+    for i in range(0,dist_m.shape[0]):
+        for j in range(0,dist_m.shape[0]):
+            
+            if dist_m.iloc[i,j] == True:
+                
+                rows.append(dist_m.index[i])
+                columns.append(dist_m.index[j])
+                
+    
+    sex_ident=samples['sex']
+    
+    for n in range (0,len(rows)):
+            
+        if sex_ident[rows[n]] == sex_ident[columns[n]]:
+                
+            print('Replicate detected:',rows[n],columns[n]) 
 
 
-
-
-
-
-
-
-
-
+#-----------------------------------------------------------------------------------------#
 
