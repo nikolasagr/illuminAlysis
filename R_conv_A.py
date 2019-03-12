@@ -82,6 +82,7 @@ def missing_thresh(samples):
 #-----------------------------------------------------------------------------------------#
 #OneClassSVM is an algorithm that specializes in learning the expected distributions in a dataset. OneClassSVM is especially useful as a novelty detector method if you can first provide data cleaned from outliers; otherwise, it’s effective as a detector of multivariate outliers. In order to have OneClassSVM work properly, you have two key parameters to fix:
 
+
 # fit the model
 def SMV_outliers(samples):
     
@@ -144,7 +145,7 @@ def SMV_outliers(samples):
 def simple_outlier(samples):
 
     tech_vars=samples[['bc1.grn','bc1.red','bc2']]
-    samples.set_index('sample.id',inplace=True)
+    #samples.set_index('sample.id',inplace=True)
     
     
     mean=[]
@@ -207,9 +208,7 @@ def infer_sex(samples):
 
 def infer_sex_2(samples,median_X,missing_Y):
     
-    x=float(median_X)
-    y=float(missing_Y)
-    
+
     # Subset the median.chrX and missing.chrY from the samples dataset
     
     # From bibliography set hard boundaries to descriminate between males and females
