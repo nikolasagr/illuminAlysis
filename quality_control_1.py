@@ -121,9 +121,49 @@ def remove_unreliable_samples(samples,threshold):
 #s_simp.intersection(s_out)
 
 #-----------------------------------------------------------------------------------------#    
+
+def k_mean_sex_infer(samples):
+
+    from sklearn import datasets
+    from sklearn.cluster import KMeans
+    import sklearn.metrics as sm
+    
+    x=samples[['median.chrX','missing.chrY']]
+    
+    # K Means Cluster
+    model = KMeans(n_clusters=2)
+    model.fit(x)
+    
+    # View the results
+    # Set the size of the plot
+    plt.figure(figsize=(14,7))
+     
+    # Create a colormap
+    colormap = np.array(['red', 'lime'])
+    
+    # Plot the Original Classifications
+    plt.subplot(1, 2, 1)
+    plt.scatter(x['median.chrX'], x['missing.chrY'], s=40)
+    plt.title('Real Classification')
+     
+    # Plot the Models Classifications
+    plt.subplot(1, 2, 2)
+    plt.scatter(x['median.chrX'], x['missing.chrY'], c=colormap[model.labels_], s=40)
+    plt.title('K Mean Classification')
+
+    
+    samples['sex_Kmeans']=model.labels_
+    
+    samples.loc[(samples['sex_Kmeans']==1),'sex_Kmeans']='F'
+    samples.loc[(samples['sex_Kmeans']==0),'sex_Kmeans']='M'
+
+
+
+#-----------------------------------------------------------------------------------------#    
 #2) infer sex 'infer_sex':
             # - get the F&M column
             # - ask for threshold
+plt.scatter(x=samples['median.chrX'],y=samples['missing.chrY'])
 
 def infer_sex(samples,threshold_chrX=0.37,threshold_chrY=0.39):
     
