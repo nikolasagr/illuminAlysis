@@ -11,7 +11,7 @@ Created on Mon Mar 11 14:30:07 2019
 # 1) remove unreliable functions 'remove_unreliable_samples'
             #- missing
             #-outliers
-            #- ! Remove corresponding samples in other list entries
+            #- Remove corresponding samples in other list entries
 
 #2) infer sex 'infer_sex':
             # - get the F&M column
@@ -34,19 +34,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import pyreadr
-from datetime import datetime
 from math import sqrt
 import timeit
-
-
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix,classification_report
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import confusion_matrix,classification_report
-
-
 
 #-----------------------------------------------------------------------------------------#
 # Data Loading
@@ -55,7 +44,7 @@ control_beads = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illu
 control_beads = control_beads[None]
 
 # In functions its dnam
-cpgs = pd.read_csv("/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData2/cpgs.csv")
+cpgs = pd.read_csv("/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData2/cpgs.csv",index_col='Unnamed: 0')
 
 controls = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/eira_controls.Rds')
 controls = controls[None]
@@ -63,7 +52,7 @@ controls = controls[None]
 #snps = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData2/eira_snps.Rds')
 #snps = snps[None]
 
-snps = pd.read_csv("/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData2/snps.csv")
+snps = pd.read_csv("/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData2/snps.csv",index_col='Unnamed: 0')
 
 samples = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/eira_samples.Rds')
 samples = samples[None]
@@ -89,6 +78,7 @@ def remove_unreliable_samples(samples,threshold):
         
     # Apply the threshold for the missing data per row
     samples=samples.loc[samples['missing']<threshold]
+    cpgs=cpgs.loc[samples.index.intersection(cpgs.index)]
     
     # Apply the outlier detection based on the values of  bc1.grn,bc1.red,bc2
     tech_vars=samples[['bc1.grn','bc1.red','bc2']]
@@ -163,6 +153,28 @@ def infer_sex(samples,threshold_chrX=0.37,threshold_chrY=0.39):
     return samples
 
 #-----------------------------------------------------------------------------------------#    
+
+# snps distribution plot
+# The allele at a SNP locus can be inferred from SNP intensities measured on the BeadChip.
+            
+def snps_distribution(snps):
+    
+    for i in range(0,snps.shape[0]):
+        a=snps.iloc[i]
+        b=a.index
+        snp_vals=a.values
+
+
+        snp_vals=pd.DataFrame(snp_vals)
+        snp_vals['snps_name']=b
+
+        snp_vals.drop(snp_vals.index[0],inplace=True)
+        snp_vals.columns=['val','snps_name']
+        plt.scatter(snp_vals['snps_name'],snp_vals['val'])
+        #plt.show()
+        
+#-----------------------------------------------------------------------------------------#    
+
 #3) call SNPS 'call_snps' :
             # - identify the snps using the thresholds
             # - plot? ASK tim
