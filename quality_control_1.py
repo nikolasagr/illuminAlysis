@@ -46,6 +46,9 @@ control_beads = control_beads[None]
 # In functions its dnam
 cpgs = pd.read_csv("/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData2/cpgs.csv",index_col='Unnamed: 0')
 
+#had to be downloaded from R
+coefs = pd.read_csv("/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/coefs.csv",index_col='Unnamed: 0')
+
 controls = pyreadr.read_r('/Users/nicolasagrotis/Desktop/illuminAlysis/illumiData/eira_controls.Rds')
 controls = controls[None]
 
@@ -128,11 +131,13 @@ def k_mean_sex_infer(samples):
     from sklearn.cluster import KMeans
     import sklearn.metrics as sm
     
+
     x=samples[['median.chrX','missing.chrY']]
     
     # K Means Cluster
-    model = KMeans(n_clusters=2)
+    model = KMeans(n_clusters=2, init=np.array(((0.25,0.1),(0.5,0.7))),algorithm="elkan")
     model.fit(x)
+    centroids = model.cluster_centers_
     
     # View the results
     # Set the size of the plot
@@ -151,11 +156,15 @@ def k_mean_sex_infer(samples):
     plt.scatter(x['median.chrX'], x['missing.chrY'], c=colormap[model.labels_], s=40)
     plt.title('K Mean Classification')
 
+    print(centroids)
     
     samples['sex_Kmeans']=model.labels_
     
     samples.loc[(samples['sex_Kmeans']==1),'sex_Kmeans']='F'
     samples.loc[(samples['sex_Kmeans']==0),'sex_Kmeans']='M'
+
+
+
 
 
 
@@ -218,10 +227,11 @@ def snps_distribution(snps):
 #3) call SNPS 'call_snps' :
             # - identify the snps using the thresholds
             # - plot? ASK tim
-
+# Need samples['sex'] for this function
+# Need the infer_sex function
 def identify_replicates(snps,threshold,samples):
     
-    snps.set_index('Unnamed: 0',inplace=True)
+    #snps.set_index('Unnamed: 0',inplace=True)
     snps.index.name='sample_id'
     
     snps[snps<=0.2]=0
@@ -265,4 +275,27 @@ def identify_replicates(snps,threshold,samples):
 
 
 #-----------------------------------------------------------------------------------------#
+
+
+def estimate_leukocytes(coefs):
+  
+cpgs=cpgs.T
+
+common=coefs.index.intersection(cpgs.index)
+
+cpgs=cpgs.loc[common]
+
+wbc_predictions = np.empty((len(cpgs.index),len(coefs.columns))
+
+A = np.identity(len(coefs.columns))
+
+b = np.repeat(0,len(coefs.columns))
+
+
+
+
+
+
+
+
 
