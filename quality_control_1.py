@@ -76,8 +76,14 @@ covars = covars[None]
 # SMV (573,27)
 # Simple(560,27)
 # PCA (501)
+            
+# input samples,threshold(0.1),cpgs
+# returns samples
+# import numpy as np
+# import pandas as pd
 
-def remove_unreliable_samples(samples,threshold):
+
+def remove_unreliable_samples(samples,threshold,cpgs):
         
     # Apply the threshold for the missing data per row
     samples=samples.loc[samples['missing']<threshold]
@@ -118,12 +124,11 @@ def remove_unreliable_samples(samples,threshold):
     
     return samples
 
-#s_out=samples_outliers.index
-#s_simp=samples_simple.index
-
-#s_simp.intersection(s_out)
 
 #-----------------------------------------------------------------------------------------#    
+
+
+
 
 def k_mean_sex_infer(samples):
 
@@ -172,14 +177,18 @@ def k_mean_sex_infer(samples):
 #2) infer sex 'infer_sex':
             # - get the F&M column
             # - ask for threshold
+
+# Depending on the graph the user can set thresholds in the x & y axis to differentiate the two classes
+# inputs: samples, x-axis threshold,y-axis threshold)
+# outpus: samples with an extra column for sex
+# The user can then check how his classification looks using the final plot
+
+            
 plt.scatter(x=samples['median.chrX'],y=samples['missing.chrY'])
+
 
 def infer_sex(samples,threshold_chrX=0.37,threshold_chrY=0.39):
     
-    #x=float(median_X)
-    #y=float(missing_Y)
-    
-    # Subset the median.chrX and missing.chrY from the samples dataset
     
     # From bibliography set hard boundaries to descriminate between males and females
     # hard boundaries: if median.chrX' < 0.37 and missing Y chromosome is smaller than 0.39 then M
@@ -197,15 +206,25 @@ def infer_sex(samples,threshold_chrX=0.37,threshold_chrY=0.39):
     print("Number of Males:",num_males)
     print("Number of Females:",num_females)
     
-    samples.set_index("sample.id",inplace=True)
+   
     
+ 
     return samples
+
+genders=['F','M']
+fg = sns.FacetGrid(data=samples, hue='sex', hue_order=genders, aspect=1.61)
+fg.map(plt.scatter, 'median.chrX', 'missing.chrY').add_legend()
+plt.legend(loc='upper left') 
+   
 
 #-----------------------------------------------------------------------------------------#    
 
 # snps distribution plot
 # The allele at a SNP locus can be inferred from SNP intensities measured on the BeadChip.
-            
+# Should axis labels be included?
+# input: snps
+# output: scatterplot which should depict 3 horizontal lines 
+
 def snps_distribution(snps):
     
     for i in range(0,snps.shape[0]):
@@ -220,8 +239,36 @@ def snps_distribution(snps):
         snp_vals.drop(snp_vals.index[0],inplace=True)
         snp_vals.columns=['val','snps_name']
         plt.scatter(snp_vals['snps_name'],snp_vals['val'])
-        #plt.show()
+        plt.show()
         
+#-----------------------------------------------------------------------------------------#    
+
+# visualise the distribution of one of the snps as a boxplot
+# inputs: snps & a sample number
+# output: boxplot
+        
+def snps_distribution_box(snps,i):
+    
+        a=snps.iloc[3]
+        b=a.index
+        snp_vals=a.values
+
+
+        snp_vals=pd.DataFrame(snp_vals)
+        snp_vals['snps_name']=b
+
+        snp_vals.drop(snp_vals.index[0],inplace=True)
+        snp_vals.columns=['val','snps_name']
+        
+        x=snp_vals.loc[snp_vals['val']>0.8]
+        y=snp_vals.loc[(snp_vals['val']<0.8) & (snp_vals['val']>0.2)]
+        z=snp_vals.loc[snp_vals['val']<0.2]
+        
+        boxplot = y.boxplot(column=['val'])
+        boxplot = x.boxplot(column=['val'])
+        boxplot = z.boxplot(column=['val']) 
+        plt.show()
+
 #-----------------------------------------------------------------------------------------#    
 
 #3) call SNPS 'call_snps' :
